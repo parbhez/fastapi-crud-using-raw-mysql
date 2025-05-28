@@ -1,0 +1,7 @@
+feedparser কী করে?
+RSS বা Atom XML ফিড URL থেকে ডেটা পড়ে।
+
+ফিডের item/post/news গুলো entries হিসেবে লিস্ট আকারে দেয়।
+
+প্রতিটি entry এর ভেতরে থাকে title, link, summary, published ইত্যাদি।
+

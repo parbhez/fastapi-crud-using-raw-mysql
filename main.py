@@ -1,14 +1,50 @@
-from fastapi import FastAPI, HTTPException, status
+from fastapi import FastAPI, HTTPException, status, Query
 import mysql.connector 
 from mysql.connector import Error
 from pydantic import BaseModel, EmailStr, ValidationError, Field
 from datetime import datetime
 from typing import Optional
 import json
-
-
+from knowledge_search import search_from_wikipedia_action_api, search_google_news_with_content, search_linkedin_duckduckgo
+from enum import Enum
 
 app = FastAPI()
+
+# Enum Class
+class SupportedLanguages(str, Enum):
+    bangla = "bn"
+    english = "en"
+    hindi = "hi"
+    urdu = "ur"
+    arabic = "ar"
+
+
+
+#====================================Intelligent Search System=============================
+
+@app.get("/ask/")
+
+def ask_question(
+    q: str = Query(..., description="Type your question"),
+    ln: SupportedLanguages = Query(..., description="Select language")
+):
+    wiki_result  = search_from_wikipedia_action_api(q, lang=ln.value)
+    news_results   = search_google_news_with_content(q, lang=ln.value)
+    linkedin_results   = search_linkedin_duckduckgo(q, lang=ln.value)
+
+    return {
+        "status": "success",
+        "query": q,
+        "wikipedia": {
+            "title": wiki_result['title'],
+            "answer": wiki_result['extract'],
+            "source": wiki_result['source']
+        },
+        "google_news": news_results,  # List of articles
+        "linkedin_results": linkedin_results  # List of linkedin result
+    }
+
+
 
 # Database connection function
 def get_connection():
@@ -46,6 +82,7 @@ class User(BaseModel):
     class Config:
         extra = "ignore" # অতিরিক্ত অজানা ফিল্ড হলে ইগনোর করবে or silently বাদ দিবে
         #extra = "allow" # দিলে নেবে, কিন্তু validation করবে না
+
 
 # ===================================== CRUD ROUTES =======================================
 
